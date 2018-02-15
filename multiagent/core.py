@@ -39,7 +39,7 @@ class Entity(object):
         # color
         self.color = None
         # max speed and accel
-        self.max_speed = None
+        self.max_speed = .25
         self.accel = None
         # state
         self.state = EntityState()
