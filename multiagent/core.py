@@ -39,7 +39,7 @@ class Entity(object):
         # color
         self.color = None
         # max speed and accel
-        self.max_speed = .25
+        self.max_speed = None
         self.accel = None
         # state
         self.state = EntityState()
@@ -97,6 +97,9 @@ class World(object):
         # contact response parameters
         self.contact_force = 1e+2
         self.contact_margin = 1e-3
+
+        # added by me (so by default it is False)
+        self.bounded_environment = False
 
     # return all entities in the world
     @property
@@ -167,6 +170,13 @@ class World(object):
                     entity.state.p_vel = entity.state.p_vel / np.sqrt(np.square(entity.state.p_vel[0]) +
                                                                   np.square(entity.state.p_vel[1])) * entity.max_speed
             entity.state.p_pos += entity.state.p_vel * self.dt
+
+
+            # close the environment
+            if self.bounded_environment:
+                entity.state.p_pos[0] = max(-1, min(1, entity.state.p_pos[0]))
+                entity.state.p_pos[1] = max(-1, min(1, entity.state.p_pos[1]))
+
 
     def update_agent_state(self, agent):
         # set communication state (directly for now)
