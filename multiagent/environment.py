@@ -217,7 +217,7 @@ class MultiAgentEnv(gym.Env):
                 # import rendering only if we need it (and don't import for headless machines)
                 #from gym.envs.classic_control import rendering
                 from multiagent import rendering
-                self.viewers[i] = rendering.Viewer(700,700)
+                self.viewers[i] = rendering.Viewer(400,400)
 
         # create rendering geometry
         if self.render_geoms is None:
@@ -227,7 +227,13 @@ class MultiAgentEnv(gym.Env):
             self.render_geoms = []
             self.render_geoms_xform = []
             for entity in self.world.entities:
-                geom = rendering.make_circle(entity.size)
+                
+                # ugly hack to determine obstacles
+                if hasattr(entity, "vertices"):
+                    geom = rendering.make_polygon(entity.vertices)
+                else:
+                    geom = rendering.make_circle(entity.size)
+
                 xform = rendering.Transform()
                 if 'agent' in entity.name:
                     geom.set_color(*entity.color, alpha=0.5)

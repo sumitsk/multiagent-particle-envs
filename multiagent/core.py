@@ -39,8 +39,8 @@ class Entity(object):
         # color
         self.color = None
         # max speed and accel
-        self.max_speed = None
-        self.accel = None
+        self.max_speed = 2.0
+        self.accel = 1.0
         # state
         self.state = EntityState()
         # mass
@@ -78,12 +78,24 @@ class Agent(Entity):
         # script behavior to execute
         self.action_callback = None
 
+
+class Obstacle(Entity):
+    def __init__(self):
+        super(Obstacle, self).__init__()
+        self.collide = True
+        
+        dim = 0.15
+        #self.vertices = [(-dim,-dim), (-dim,dim), (dim,dim), (dim,-dim)]
+        self.size = dim
+
+
 # multi-agent world
 class World(object):
     def __init__(self):
         # list of agents and entities (can change at execution-time!)
         self.agents = []
         self.landmarks = []
+        self.obstacles = []
         # communication channel dimensionality
         self.dim_c = 0
         # position dimensionality
@@ -104,7 +116,7 @@ class World(object):
     # return all entities in the world
     @property
     def entities(self):
-        return self.agents + self.landmarks
+        return self.agents + self.landmarks + self.obstacles
 
     # return all agents controllable by external policies
     @property
