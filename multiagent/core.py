@@ -92,10 +92,16 @@ class Obstacle(Entity):
 # multi-agent world
 class World(object):
     def __init__(self):
+        # todo: initialize them from the function argument
+        self.num_agents = None
+        self.num_landmarks = None
+        self.num_obstacles = None
+
         # list of agents and entities (can change at execution-time!)
         self.agents = []
         self.landmarks = []
-        self.obstacles = []
+        #self.obstacles = []
+        self.fixed_obstacles = None
         # communication channel dimensionality
         self.dim_c = 0
         # position dimensionality
@@ -116,7 +122,7 @@ class World(object):
     # return all entities in the world
     @property
     def entities(self):
-        return self.agents + self.landmarks + self.obstacles
+        return self.agents + self.landmarks #+ self.obstacles
 
     # return all agents controllable by external policies
     @property

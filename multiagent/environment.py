@@ -236,7 +236,7 @@ class MultiAgentEnv(gym.Env):
 
                 xform = rendering.Transform()
                 if 'agent' in entity.name:
-                    geom.set_color(*entity.color, alpha=0.5)
+                    geom.set_color(*entity.color, alpha=1.0)
                 else:
                     geom.set_color(*entity.color)
                 geom.add_attr(xform)

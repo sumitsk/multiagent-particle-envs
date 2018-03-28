@@ -4,28 +4,51 @@ from multiagent.scenario import BaseScenario
 
 
 class Scenario(BaseScenario):
-    def make_world(self):
+    def make_world(self, num_agents=1, num_landmarks=1, num_obstacles=2, 
+        fixed_obstacles=True):
         world = World()
         # set any world properties first
         world.dim_c = 2
-        num_agents = 2
-        num_landmarks = 2
-        # add agents
-        world.agents = [Agent() for i in range(num_agents)]
+        world = self.setup_world(world, num_agents, num_landmarks, num_obstacles)
+        world.fixed_obstacles = fixed_obstacles
+        self.reset_world(world)
+        return world
+
+    # called only once while initializing the world    
+    def setup_world(self, world, num_agents=1, num_landmarks=1, num_obstacles=2):
+        world.num_agents = num_agents
+        world.num_landmarks = num_landmarks
+        world.num_obstacles = num_obstacles
+
+        world.agents = [Agent() for i in range(world.num_agents)]
         for i, agent in enumerate(world.agents):
             agent.name = 'agent %d' % i
             agent.collide = True
             agent.silent = True
             agent.size = 0.10
         # add landmarks
-        world.landmarks = [Landmark() for i in range(num_landmarks)]
+        world.landmarks = [Landmark() for i in range(world.num_landmarks)]
         for i, landmark in enumerate(world.landmarks):
             landmark.name = 'landmark %d' % i
             landmark.collide = False
             landmark.movable = False
-        # make initial conditions
-        self.reset_world(world)
-        return world
+            landmark.size = 0.10
+
+        # TODO: currently obstacle is also set as a landmark    
+        obstacles = [Landmark() for i in range(world.num_obstacles)]
+        poses = [[-0.25,0.25],[0.25,-0.25]]
+        for i, obstacle in enumerate(obstacles):    
+            obstacle.name = 'obstacle %d' % i
+            obstacle.collide = True
+            obstacle.movable = False    
+            # hand crafted positions
+            obstacle.size = 0.15
+            obstacle.state.p_pos = np.array(poses[i])
+            obstacle.state.p_vel = np.zeros(world.dim_p)
+
+        # TODO: for sake of physics simulation (obstacles are considered obstacles)    
+        world.landmarks = world.landmarks + obstacles
+        return world    
 
     def reset_world(self, world):
         # random properties for agents
@@ -33,15 +56,44 @@ class Scenario(BaseScenario):
             agent.color = np.array([0.35, 0.35, 0.85])
         # random properties for landmarks
         for i, landmark in enumerate(world.landmarks):
-            landmark.color = np.array([0.25, 0.25, 0.25])
+            if i < world.num_landmarks:
+                landmark.color = np.array([0.25, 0.25, 0.25])
+            # obstacle color
+            else:
+                landmark.color = np.array([0.9, 0.2, 0.8])
+
         # set random initial states
         for agent in world.agents:
             agent.state.p_pos = np.random.uniform(-1, +1, world.dim_p)
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
-        for i, landmark in enumerate(world.landmarks):
-            landmark.state.p_pos = np.random.uniform(-1, +1, world.dim_p)
+
+        self.reset_landmarks(world)    
+        #for i, landmark in enumerate(world.landmarks[:world.num_landmarks]):
+            #landmark.state.p_pos = np.random.uniform(-1, +1, world.dim_p)
+            #landmark.state.p_vel = np.zeros(world.dim_p)
+
+
+    def reset_landmarks(self, world):
+        for i, landmark in enumerate(world.landmarks[:world.num_landmarks]):
             landmark.state.p_vel = np.zeros(world.dim_p)
+            found = False
+            while not found:            
+                landmark.state.p_pos = np.random.uniform(-1, +1, world.dim_p)
+                found = self.valid_landmark(world, landmark)
+
+            
+    def valid_landmark(self, world, landmark):
+        for i, obstacle in enumerate(world.landmarks[world.num_landmarks:]):
+            dist = np.linalg.norm(landmark.state.p_pos - obstacle.state.p_pos)
+            if dist < landmark.size + obstacle.size:
+                return False
+        return True        
+
+
+
+
+            
 
     def benchmark_data(self, agent, world):
         rew = 0

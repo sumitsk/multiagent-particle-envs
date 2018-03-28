@@ -50,6 +50,7 @@ class Scenario(BaseScenario):
             landmark.name = 'landmark %d' % i
             landmark.collide = False
             landmark.movable = False
+            landmark.size = 0.10
 
         world.obstacles = [Obstacle() for i in range(num_obstacles)]
         for i, obstacle in enumerate(world.obstacles):    
@@ -66,10 +67,10 @@ class Scenario(BaseScenario):
     def reset_world(self, world):
         # random properties for agents
         for i, agent in enumerate(world.agents):
-            agent.color = np.array([0.35, 0.35, 0.85])
+            agent.color = np.array([0.85, 0.05, 0.85])
         # random properties for landmarks
         for i, landmark in enumerate(world.landmarks):
-            landmark.color = np.array([0.25, 0.25, 0.25])
+            landmark.color = np.array([0.95, 0.95, 0.25])
         for i, obstacle in enumerate(world.obstacles):
             obstacle.color = np.array([0.5, 0.5, 0.5])
 
