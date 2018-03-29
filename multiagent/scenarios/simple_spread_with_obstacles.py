@@ -35,6 +35,7 @@ class Scenario(BaseScenario):
             landmark.size = 0.10
 
         # TODO: currently obstacle is also set as a landmark    
+        '''
         obstacles = [Landmark() for i in range(world.num_obstacles)]
         poses = [[-0.25,0.25],[0.25,-0.25]]
         for i, obstacle in enumerate(obstacles):    
@@ -45,7 +46,8 @@ class Scenario(BaseScenario):
             obstacle.size = 0.15
             obstacle.state.p_pos = np.array(poses[i])
             obstacle.state.p_vel = np.zeros(world.dim_p)
-
+        '''
+        obstacles = self.custom_obstacles_layout(world)
         # TODO: for sake of physics simulation (obstacles are considered obstacles)    
         world.landmarks = world.landmarks + obstacles
         return world    
@@ -91,9 +93,24 @@ class Scenario(BaseScenario):
         return True        
 
 
+    def custom_obstacles_layout(self, world):
+        # draw a custom layout of circular obstacles (for now)
+
+        # assert num_obstacles = 6
+        obstacles = [Landmark() for i in range(world.num_obstacles)]
+        poses = [[-.35,-.3],[-.35,0],[-.35,.3],[.35,-.3],[.35,0],[.35,.3]]
+        for i, obstacle in enumerate(obstacles):    
+            obstacle.name = 'obstacle %d' % i
+            obstacle.collide = True
+            obstacle.movable = False    
+            # hand crafted positions
+            obstacle.size = 0.15
+            obstacle.state.p_pos = np.array(poses[i])
+            obstacle.state.p_vel = np.zeros(world.dim_p)
+        return obstacles
 
 
-            
+
 
     def benchmark_data(self, agent, world):
         rew = 0
