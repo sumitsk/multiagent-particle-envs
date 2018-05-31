@@ -2,6 +2,7 @@ import gym
 from gym import spaces
 from gym.envs.registration import EnvSpec
 import numpy as np
+import ipdb
 
 # environment for all agents in the multiagent world
 # currently code assumes that no agents will be created/destroyed at runtime!
@@ -209,17 +210,21 @@ class MultiAgentEnv(gym.Env):
                     else:
                         word = alphabet[np.argmax(other.state.c)]
                     message += (other.name + ' to ' + agent.name + ': ' + word + '   ')
-            #print(message)
+            # print(message)
 
+        # ipdb.set_trace()
         for i in range(len(self.viewers)):
             # create viewers (if necessary)
             if self.viewers[i] is None:
                 # import rendering only if we need it (and don't import for headless machines)
-                #from gym.envs.classic_control import rendering
+                # from gym.envs.classic_control import rendering
                 from multiagent import rendering
                 self.viewers[i] = rendering.Viewer(400,400)
 
         # create rendering geometry
+        # NOTE: this is true only for the first time render function is called
+        # to modify rendering (removing obstacles or robots), you need to remove
+        # geom from self.render_geoms 
         if self.render_geoms is None:
             # import rendering only if we need it (and don't import for headless machines)
             #from gym.envs.classic_control import rendering
@@ -229,6 +234,7 @@ class MultiAgentEnv(gym.Env):
             for entity in self.world.entities:
                 
                 # ugly hack to determine obstacles
+                # NOTE: this if statement is never called as of now
                 if hasattr(entity, "vertices"):
                     geom = rendering.make_polygon(entity.vertices)
                 else:

@@ -1,44 +1,79 @@
 import numpy as np
-from multiagent.core import World, Agent, Landmark
+from multiagent.core import World, Agent, Landmark, Obstacle
 from multiagent.scenario import BaseScenario
 
 
 class Scenario(BaseScenario):
-    def __init__(self, num_agents=1, num_landmarks=1):
-        self.num_agents = num_agents
-        self.num_landmarks = num_landmarks
-        # print('Initialising simple spread scenario')
-
-    def make_world(self):
+    def make_world(self, num_agents=2, num_landmarks=3, num_obstacles=1):
         world = World()
         # set any world properties first
         world.dim_c = 2
-        num_agents = self.num_agents
-        num_landmarks = self.num_landmarks
+
+        '''
+        num_agents = 2
+        num_landmarks = 2
         # add agents
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
             agent.name = 'agent %d' % i
             agent.collide = True
             agent.silent = True
-            agent.size = 0.15
+            agent.size = 0.10
         # add landmarks
         world.landmarks = [Landmark() for i in range(num_landmarks)]
         for i, landmark in enumerate(world.landmarks):
             landmark.name = 'landmark %d' % i
             landmark.collide = False
             landmark.movable = False
+        '''
+
+        world = self.setup_world(world, num_agents, num_landmarks, num_obstacles)
+
         # make initial conditions
         self.reset_world(world)
         return world
 
+    def setup_world(self, world, num_agents_=2, num_landmarks_=2, num_obstacles_=2):
+        num_agents = num_agents_
+        num_landmarks = num_landmarks_
+        num_obstacles = num_obstacles_
+
+        world.agents = [Agent() for i in range(num_agents)]
+        for i, agent in enumerate(world.agents):
+            agent.name = 'agent %d' % i
+            agent.collide = True
+            agent.silent = True
+            agent.size = 0.10
+        # add landmarks
+        world.landmarks = [Landmark() for i in range(num_landmarks)]
+        for i, landmark in enumerate(world.landmarks):
+            landmark.name = 'landmark %d' % i
+            landmark.collide = False
+            landmark.movable = False
+            landmark.size = 0.10
+
+        world.obstacles = [Obstacle() for i in range(num_obstacles)]
+        for i, obstacle in enumerate(world.obstacles):    
+            obstacle.name = 'obstacle %d' % i
+            obstacle.collide = True
+            obstacle.movable = False    
+
+        world.landmarks = world.landmarks + world.obstacles
+        world.obstacles = []    
+
+        return world     
+
+
     def reset_world(self, world):
         # random properties for agents
         for i, agent in enumerate(world.agents):
-            agent.color = np.array([0.35, 0.35, 0.85])
+            agent.color = np.array([0.85, 0.05, 0.85])
         # random properties for landmarks
         for i, landmark in enumerate(world.landmarks):
-            landmark.color = np.array([0.25, 0.25, 0.25])
+            landmark.color = np.array([0.95, 0.95, 0.25])
+        for i, obstacle in enumerate(world.obstacles):
+            obstacle.color = np.array([0.5, 0.5, 0.5])
+
         # set random initial states
         for agent in world.agents:
             agent.state.p_pos = np.random.uniform(-1, +1, world.dim_p)
@@ -47,6 +82,12 @@ class Scenario(BaseScenario):
         for i, landmark in enumerate(world.landmarks):
             landmark.state.p_pos = np.random.uniform(-1, +1, world.dim_p)
             landmark.state.p_vel = np.zeros(world.dim_p)
+
+        '''    
+        for i,obstacle in enumerate(world.obstacles):
+            obstacle.state.p_pos = np.zeros(world.dim_p)
+            obstacle.state.p_vel = np.zeros(world.dim_p)    
+        '''
 
     def benchmark_data(self, agent, world):
         rew = 0
@@ -83,6 +124,8 @@ class Scenario(BaseScenario):
             for a in world.agents:
                 if self.is_collision(a, agent):
                     rew -= 1
+            # NOTE - it seems that due to self collision, rew is decreased by 1
+            rew += 1        
         return rew
 
     def observation(self, agent, world):
